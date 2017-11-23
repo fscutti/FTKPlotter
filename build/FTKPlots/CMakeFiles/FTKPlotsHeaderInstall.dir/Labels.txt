@@ -1,5 +1,0 @@
-# Target labels
- FTKPlots
-# Source files and their labels
-/home/fscutti/FTKPlotter/build/x86_64-slc6-gcc62-opt/include/FTKPlots
-/home/fscutti/FTKPlotter/build/x86_64-slc6-gcc62-opt/include/FTKPlots.rule
