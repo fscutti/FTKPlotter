@@ -1,0 +1,19 @@
+
+{
+	"sources" : 
+	[
+		
+		{
+			"file" : "/home/fscutti/FTKPlotter/build/x86_64-slc6-gcc62-opt/include/FTKPlots"
+		},
+		
+		{
+			"file" : "/home/fscutti/FTKPlotter/build/x86_64-slc6-gcc62-opt/include/FTKPlots.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : [ "FTKPlots" ],
+		"name" : "FTKPlotsHeaderInstall"
+	}
+}

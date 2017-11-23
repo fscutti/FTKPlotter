@@ -1,0 +1,4 @@
+[ libFTKPlotsLib.so ]
+# List of selected classes
+class FTKReader
+header FTKPlots/FTKReader.h
