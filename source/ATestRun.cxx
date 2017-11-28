@@ -22,9 +22,18 @@ void ATestRun (const std::string& submitDir)
   // containing all the files, not the subdirectories.
 
   // use SampleHandler to scan all of the subdirectories of a directory for particular MC single file:
-  const char* inputFilePath = gSystem->ExpandPathName ("/data/fscutti/user.fscutti");
+  //const char* inputFilePath = gSystem->ExpandPathName ("/data/fscutti/user.fscutti");
   //SH::ScanDir().filePattern("user.fscutti.12548767.EXT0._000001.InDetDxAOD.pool.root").scan(sh,inputFilePath);
-  SH::ScanDir().filePattern("InDetDxAOD.pool.root").scan(sh,inputFilePath);
+  //SH::ScanDir().filePattern("InDetDxAOD.pool.root").scan(sh,inputFilePath);
+  
+  
+  // old output used for reference 
+  //const char* inputFilePath = gSystem->ExpandPathName ("/home/fscutti/FastSim/xAODAnalysis/OldInputDAOD");
+  //SH::ScanDir().filePattern("InDetDxAOD.pool.root").scan(sh,inputFilePath);
+ 
+  // output from the grid 
+  const char* inputFilePath = gSystem->ExpandPathName ("/data/fscutti/FTKSamples/output/user.fscutti.26Nov11_EXT0");
+  SH::ScanDir().filePattern("user.fscutti.12680603.EXT0._000001.InDetDxAOD.pool.root").scan(sh,inputFilePath);
 
 
   // set the name of the tree in our files
@@ -45,17 +54,17 @@ void ATestRun (const std::string& submitDir)
   //std::string configName = "./FTKReader/config/FTKReader.config";
   //TEnv* config = new TEnv(configName.c_str());
   
-  //float minPT  = 1000; // MeV
-  //float maxEta = 2.4;
-  //float maxPhi = 3.14;
-  //float maxD0  = 2.;
-  //float maxZ0  = 100.;
+  float minPT  = 1000; // MeV
+  float maxEta = 2.4;
+  float maxPhi = 3.14;
+  float maxD0  = 2.;
+  float maxZ0  = 100.;
   
-  float minPT  = 0.0; // MeV
-  float maxEta = 1000.;
-  float maxPhi = 1000.;
-  float maxD0  = 1000.;
-  float maxZ0  = 1000.;
+  //float minPT  = 0.0; // MeV
+  //float maxEta = 1000.;
+  //float maxPhi = 1000.;
+  //float maxD0  = 1000.;
+  //float maxZ0  = 1000.;
 
   // add our algorithm to the job
   FTKReader *alg = new FTKReader;

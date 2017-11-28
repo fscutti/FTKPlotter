@@ -142,6 +142,7 @@ std::unordered_map<int, std::pair<const xAOD::TrackParticle*, const xAOD::TruthP
           best_truth = truth;
           best_itrack = itrack;
           best_itruth = itruth;
+          std::cout << " ... Iter match (best_itruth, best_track) " << best_itruth << best_track << " DR " << DR << " best_DR " << best_DR << std::endl;
         }
       }
       
@@ -151,11 +152,13 @@ std::unordered_map<int, std::pair<const xAOD::TrackParticle*, const xAOD::TruthP
       // track keep the new match if it is better 
       
       if (got == match_map.end() and best_itrack != -1 and best_itruth != -1) {
+        std::cout << " First match (best_itruth, best_track) " << best_itruth << best_track << " DR " << DR << " best_DR " << best_DR << std::endl;
         match_map[best_itruth] = std::pair<const xAOD::TrackParticle*, const xAOD::TruthParticle*>(best_track, best_truth);
       }
       else if (got != match_map.end() and best_itrack != -1 and best_itruth != -1) {
         float old_DR = getDR(match_map[best_itruth].first->eta(), match_map[best_itruth].second->eta(),match_map[best_itruth].first->phi(), match_map[best_itruth].second->phi());
         if (old_DR > best_DR) {
+          std::cout << " New match (best_itruth, best_track) " << best_itruth << best_track << " old_DR " << old_DR << " best_DR " << best_DR << std::endl;
           match_map[best_itruth] = std::pair<const xAOD::TrackParticle*, const xAOD::TruthParticle*>(best_track, best_truth);
         }
       }
@@ -412,13 +415,13 @@ EL::StatusCode FTKReader :: execute ()
     //---------------------------
     
     // fastsim 
-    truthMap_FTKFastSimTracks = findBestMatchDR(truthParticles,FTKFastSimTracks,false);
+    truthMap_FTKFastSimTracks = findBestMatchDR(truthParticles,FTKFastSimTracks);
     
     // fullsim
-    truthMap_FTKFullSimTracks = findBestMatchDR(truthParticles,FTKFullSimTracks,false);
+    truthMap_FTKFullSimTracks = findBestMatchDR(truthParticles,FTKFullSimTracks);
 
     // offline
-    truthMap_OfflineTracks = findBestMatchDR(truthParticles,OfflineTracks,false);
+    truthMap_OfflineTracks = findBestMatchDR(truthParticles,OfflineTracks);
     
     //std::unordered_map<signed long, bool>hasBarcode_truthParticle; 
     for (auto truthPart: *truthParticles) {
