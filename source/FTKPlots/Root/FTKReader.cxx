@@ -114,25 +114,24 @@ std::unordered_map<int, std::pair<const xAOD::TrackParticle*, const xAOD::TruthP
   // is the pair of the matched track and the true one
   
   float default_best_DR = best_DR; 
-  int itruth = -1;
-  int best_itruth = -1;
-  const xAOD::TruthParticle* best_truth = nullptr;
+  int itrack = -1;
+  int best_itrack = -1;
+  const xAOD::TrackParticle* best_track = nullptr;
   
   std::unordered_map<int, std::pair<const xAOD::TrackParticle*, const xAOD::TruthParticle*>> match_map;
 
-  for (const auto truth : *truthPartCont) {
-      ++itruth;
-      if (!isAcceptedParticle(truth)) continue;
+  for (const auto track : *trkPartCont) {
+      ++itrack;
+      if (!isAcceptedParticle(track)) continue;
 
-      int itrack = -1;
-      int best_itrack = -1;
-      const xAOD::TrackParticle* best_track = nullptr;
+      int itruth = -1;
+      int best_itruth = -1;
+      const xAOD::TruthParticle* best_truth = nullptr;
       float DR = 0;
       
-
-      for (const auto track : *trkPartCont) {
-        ++itrack;
-        if (!isAcceptedParticle(track)) continue;
+      for (const auto truth : *truthPartCont) {
+        ++itruth;
+        if (!isAcceptedParticle(truth)) continue;
         
         DR = getDR(track->eta(),truth->eta(),track->phi(),truth->phi()); 
         
@@ -150,7 +149,7 @@ std::unordered_map<int, std::pair<const xAOD::TrackParticle*, const xAOD::TruthP
       
       // if a new match is found for a previous 
       // track keep the new match if it is better 
-      
+      //
       if (got == match_map.end() and best_itrack != -1 and best_itruth != -1) {
         std::cout << " First match (best_itruth, best_track) " << best_itruth << best_track << " DR " << DR << " best_DR " << best_DR << std::endl;
         match_map[best_itruth] = std::pair<const xAOD::TrackParticle*, const xAOD::TruthParticle*>(best_track, best_truth);
@@ -165,7 +164,9 @@ std::unordered_map<int, std::pair<const xAOD::TrackParticle*, const xAOD::TruthP
       // reset the best_DR to the default value
       best_DR = default_best_DR;
   } 
+  
   return match_map;
+
 }
 
 
@@ -430,6 +431,7 @@ EL::StatusCode FTKReader :: execute ()
       //if(!hasBarcode_truthParticle[truthPart->barcode()]) hasBarcode_truthParticle[truthPart->barcode()] = true;
       
       std::cout << "Truth pt " << truthPart->pt() << std::endl;
+      truth_track_qinv2pt.push_back(  0.5 * GeV * truthPart->charge() / truthPart->pt() );
       truth_track_pt.push_back(     truthPart->pt() / GeV );
       truth_track_eta.push_back(         truthPart->eta() );
       truth_track_charge.push_back(   truthPart->charge() );
@@ -443,7 +445,7 @@ EL::StatusCode FTKReader :: execute ()
       truth_track_phi.push_back( truthPart->auxdata<float>("phi"));
       truth_track_d0.push_back( truthPart->auxdata<float>("d0"));
       truth_track_z0.push_back( truthPart->auxdata<float>("z0"));
-      truth_track_qop.push_back( truthPart->auxdata<float>("qOverP"));
+      truth_track_qop.push_back( truthPart->auxdata<float>("qOverP") * GeV);
 
       
       // ---------------------------  
@@ -458,6 +460,16 @@ EL::StatusCode FTKReader :: execute ()
         
         //std::cout << " Matched pt " << truthMap_FTKFastSimTracks[itruth].second->pt() << " Part pt " << truthPart->pt() << std::endl;
        
+        //float dqinv2pt     = truthMap_FTKFastSimTracks[itruth].first->charge() / truthMap_FTKFastSimTracks[itruth].first->pt();        
+        //      dqinv2pt    -= truthMap_FTKFastSimTracks[itruth].second->charge() / truthMap_FTKFastSimTracks[itruth].second->pt();
+        //      dqinv2pt    *= 0.5;
+        
+        // remove the charge info as is all one for fast sim atm
+        float dqinv2pt     = 1. / truthMap_FTKFastSimTracks[itruth].first->pt();        
+              dqinv2pt    -= 1. / truthMap_FTKFastSimTracks[itruth].second->pt();
+              dqinv2pt    *= 0.5;
+
+
         float dpt     = truthMap_FTKFastSimTracks[itruth].first->pt()                      - truthMap_FTKFastSimTracks[itruth].second->pt();
         float deta    = truthMap_FTKFastSimTracks[itruth].first->eta()                     - truthMap_FTKFastSimTracks[itruth].second->eta();
         float dtheta  = truthMap_FTKFastSimTracks[itruth].first->auxdata<float>("theta")   - truthMap_FTKFastSimTracks[itruth].second->auxdata<float>("theta");
@@ -467,21 +479,23 @@ EL::StatusCode FTKReader :: execute ()
         float dqop    = truthMap_FTKFastSimTracks[itruth].first->auxdata<float>("qOverP")  - truthMap_FTKFastSimTracks[itruth].second->auxdata<float>("qOverP");
         //dphi = ( dphi <= TMath::Pi() ) ? dphi : ( 2 * TMath::Pi() - dphi );
         
-        fastsim_track_delta_pt.push_back( dpt );
+        fastsim_track_delta_qinv2pt.push_back( GeV * dqinv2pt );
+        fastsim_track_delta_pt.push_back( dpt / GeV );
         fastsim_track_delta_eta.push_back( deta );
         fastsim_track_delta_theta.push_back( dtheta );
         fastsim_track_delta_phi.push_back( dphi );
         fastsim_track_delta_d0.push_back( dd0 );
         fastsim_track_delta_z0.push_back( dz0 );
-        fastsim_track_delta_qop.push_back( dqop );
+        fastsim_track_delta_qop.push_back( dqop * GeV );
       
-        fastsim_track_true_pt.push_back(      truthMap_FTKFastSimTracks[itruth].second->pt()                      );
-        fastsim_track_true_eta.push_back(     truthMap_FTKFastSimTracks[itruth].second->eta()                     );
-        fastsim_track_true_theta.push_back(   truthMap_FTKFastSimTracks[itruth].second->auxdata<float>("theta")   );
-        fastsim_track_true_phi.push_back(     truthMap_FTKFastSimTracks[itruth].second->auxdata<float>("phi")     );
-        fastsim_track_true_d0.push_back(      truthMap_FTKFastSimTracks[itruth].second->auxdata<float>("d0")      );
-        fastsim_track_true_z0.push_back(      truthMap_FTKFastSimTracks[itruth].second->auxdata<float>("z0")      );
-        fastsim_track_true_qop.push_back(     truthMap_FTKFastSimTracks[itruth].second->auxdata<float>("qOverP")  );
+        fastsim_track_true_qinv2pt.push_back( truthMap_FTKFastSimTracks[itruth].second->charge() / truthMap_FTKFastSimTracks[itruth].second->pt() * 0.5 * GeV );
+        fastsim_track_true_pt.push_back(      truthMap_FTKFastSimTracks[itruth].second->pt() / GeV                     );
+        fastsim_track_true_eta.push_back(     truthMap_FTKFastSimTracks[itruth].second->eta()                          );
+        fastsim_track_true_theta.push_back(   truthMap_FTKFastSimTracks[itruth].second->auxdata<float>("theta")        );
+        fastsim_track_true_phi.push_back(     truthMap_FTKFastSimTracks[itruth].second->auxdata<float>("phi")          );
+        fastsim_track_true_d0.push_back(      truthMap_FTKFastSimTracks[itruth].second->auxdata<float>("d0")           );
+        fastsim_track_true_z0.push_back(      truthMap_FTKFastSimTracks[itruth].second->auxdata<float>("z0")           );
+        fastsim_track_true_qop.push_back(     truthMap_FTKFastSimTracks[itruth].second->auxdata<float>("qOverP") * GeV );
       
       }
       else truth_ismatched_fastsim.push_back( 0 );
@@ -499,6 +513,9 @@ EL::StatusCode FTKReader :: execute ()
         
         //std::cout << " Matched pt " << truthMap_FTKFullSimTracks[itruth].second->pt() << " Part pt " << truthPart->pt() << std::endl;
        
+        float dqinv2pt     = truthMap_FTKFullSimTracks[itruth].first->charge() / truthMap_FTKFullSimTracks[itruth].first->pt();        
+              dqinv2pt    -= truthMap_FTKFullSimTracks[itruth].second->charge() / truthMap_FTKFullSimTracks[itruth].second->pt();
+              dqinv2pt    *= 0.5;
         float dpt     = truthMap_FTKFullSimTracks[itruth].first->pt()                        - truthMap_FTKFullSimTracks[itruth].second->pt();
         float deta    = truthMap_FTKFullSimTracks[itruth].first->eta()                       - truthMap_FTKFullSimTracks[itruth].second->eta();
         float dtheta  = truthMap_FTKFullSimTracks[itruth].first->auxdata<float>("theta")     - truthMap_FTKFullSimTracks[itruth].second->auxdata<float>("theta");
@@ -508,21 +525,23 @@ EL::StatusCode FTKReader :: execute ()
         float dqop    = truthMap_FTKFullSimTracks[itruth].first->auxdata<float>("qOverP")    - truthMap_FTKFullSimTracks[itruth].second->auxdata<float>("qOverP");
         //dphi = ( dphi <= TMath::Pi() ) ? dphi : ( 2 * TMath::Pi() - dphi );
         
-        fullsim_track_delta_pt.push_back( dpt );
+        fullsim_track_delta_qinv2pt.push_back( GeV * dqinv2pt );
+        fullsim_track_delta_pt.push_back( dpt / GeV );
         fullsim_track_delta_eta.push_back( deta );
         fullsim_track_delta_theta.push_back( dtheta );
         fullsim_track_delta_phi.push_back( dphi );
         fullsim_track_delta_d0.push_back( dd0 );
         fullsim_track_delta_z0.push_back( dz0 );
-        fullsim_track_delta_qop.push_back( dqop );
+        fullsim_track_delta_qop.push_back( dqop * GeV );
       
-        fullsim_track_true_pt.push_back(      truthMap_FTKFullSimTracks[itruth].second->pt() / GeV                );
-        fullsim_track_true_eta.push_back(     truthMap_FTKFullSimTracks[itruth].second->eta()                     );
-        fullsim_track_true_theta.push_back(   truthMap_FTKFullSimTracks[itruth].second->auxdata<float>("theta")   );
-        fullsim_track_true_phi.push_back(     truthMap_FTKFullSimTracks[itruth].second->auxdata<float>("phi")     );
-        fullsim_track_true_d0.push_back(      truthMap_FTKFullSimTracks[itruth].second->auxdata<float>("d0")      );
-        fullsim_track_true_z0.push_back(      truthMap_FTKFullSimTracks[itruth].second->auxdata<float>("z0")      );
-        fullsim_track_true_qop.push_back(     truthMap_FTKFullSimTracks[itruth].second->auxdata<float>("qOverP")  );
+        fullsim_track_true_qinv2pt.push_back( truthMap_FTKFullSimTracks[itruth].second->charge() / truthMap_FTKFullSimTracks[itruth].second->pt() * 0.5 * GeV );
+        fullsim_track_true_pt.push_back(      truthMap_FTKFullSimTracks[itruth].second->pt() / GeV                     );
+        fullsim_track_true_eta.push_back(     truthMap_FTKFullSimTracks[itruth].second->eta()                          );
+        fullsim_track_true_theta.push_back(   truthMap_FTKFullSimTracks[itruth].second->auxdata<float>("theta")        );
+        fullsim_track_true_phi.push_back(     truthMap_FTKFullSimTracks[itruth].second->auxdata<float>("phi")          );
+        fullsim_track_true_d0.push_back(      truthMap_FTKFullSimTracks[itruth].second->auxdata<float>("d0")           );
+        fullsim_track_true_z0.push_back(      truthMap_FTKFullSimTracks[itruth].second->auxdata<float>("z0")           );
+        fullsim_track_true_qop.push_back(     truthMap_FTKFullSimTracks[itruth].second->auxdata<float>("qOverP") * GeV );
       
       }
       else truth_ismatched_fullsim.push_back( 0 );
@@ -540,6 +559,9 @@ EL::StatusCode FTKReader :: execute ()
         
         //std::cout << " Matched pt " << truthMap_OfflineTracks[itruth].second->pt() << " Part pt " << truthPart->pt() << std::endl;
        
+        float dqinv2pt     = truthMap_OfflineTracks[itruth].first->charge() / truthMap_OfflineTracks[itruth].first->pt();        
+              dqinv2pt    -= truthMap_OfflineTracks[itruth].second->charge() / truthMap_OfflineTracks[itruth].second->pt();
+              dqinv2pt    *= 0.5;
         float dpt     = truthMap_OfflineTracks[itruth].first->pt()                        - truthMap_OfflineTracks[itruth].second->pt();
         float deta    = truthMap_OfflineTracks[itruth].first->eta()                       - truthMap_OfflineTracks[itruth].second->eta();
         float dtheta  = truthMap_OfflineTracks[itruth].first->auxdata<float>("theta")     - truthMap_OfflineTracks[itruth].second->auxdata<float>("theta");
@@ -549,21 +571,23 @@ EL::StatusCode FTKReader :: execute ()
         float dqop    = truthMap_OfflineTracks[itruth].first->auxdata<float>("qOverP")    - truthMap_OfflineTracks[itruth].second->auxdata<float>("qOverP");
         //dphi = ( dphi <= TMath::Pi() ) ? dphi : ( 2 * TMath::Pi() - dphi );
         
-        offline_track_delta_pt.push_back( dpt );
+        offline_track_delta_qinv2pt.push_back( GeV * dqinv2pt );
+        offline_track_delta_pt.push_back( dpt / GeV );
         offline_track_delta_eta.push_back( deta );
         offline_track_delta_theta.push_back( dtheta );
         offline_track_delta_phi.push_back( dphi );
         offline_track_delta_d0.push_back( dd0 );
         offline_track_delta_z0.push_back( dz0 );
-        offline_track_delta_qop.push_back( dqop );
+        offline_track_delta_qop.push_back( dqop * GeV );
       
-        offline_track_true_pt.push_back(      truthMap_OfflineTracks[itruth].second->pt()                      );
-        offline_track_true_eta.push_back(     truthMap_OfflineTracks[itruth].second->eta()                     );
-        offline_track_true_theta.push_back(   truthMap_OfflineTracks[itruth].second->auxdata<float>("theta")   );
-        offline_track_true_phi.push_back(     truthMap_OfflineTracks[itruth].second->auxdata<float>("phi")     );
-        offline_track_true_d0.push_back(      truthMap_OfflineTracks[itruth].second->auxdata<float>("d0")      );
-        offline_track_true_z0.push_back(      truthMap_OfflineTracks[itruth].second->auxdata<float>("z0")      );
-        offline_track_true_qop.push_back(     truthMap_OfflineTracks[itruth].second->auxdata<float>("qOverP")  );
+        offline_track_true_qinv2pt.push_back( truthMap_OfflineTracks[itruth].second->charge() / truthMap_OfflineTracks[itruth].second->pt() * 0.5 * GeV );
+        offline_track_true_pt.push_back(      truthMap_OfflineTracks[itruth].second->pt() / GeV                     );
+        offline_track_true_eta.push_back(     truthMap_OfflineTracks[itruth].second->eta()                          );
+        offline_track_true_theta.push_back(   truthMap_OfflineTracks[itruth].second->auxdata<float>("theta")        );
+        offline_track_true_phi.push_back(     truthMap_OfflineTracks[itruth].second->auxdata<float>("phi")          );
+        offline_track_true_d0.push_back(      truthMap_OfflineTracks[itruth].second->auxdata<float>("d0")           );
+        offline_track_true_z0.push_back(      truthMap_OfflineTracks[itruth].second->auxdata<float>("z0")           );
+        offline_track_true_qop.push_back(     truthMap_OfflineTracks[itruth].second->auxdata<float>("qOverP") * GeV );
       
       }
       else truth_ismatched_offline.push_back( 0 );
@@ -579,6 +603,7 @@ EL::StatusCode FTKReader :: execute ()
     if (!isAcceptedParticle(fastTrack)) continue;
     
     std::cout << "FTKFast pt " << fastTrack->pt() << std::endl;
+    fastsim_track_qinv2pt.push_back(  0.5 * GeV * fastTrack->charge() / fastTrack->pt() );
     fastsim_track_pt.push_back( fastTrack->pt() / GeV );
     fastsim_track_eta.push_back( fastTrack->eta() );
     fastsim_track_charge.push_back( fastTrack->charge() );
@@ -588,7 +613,7 @@ EL::StatusCode FTKReader :: execute ()
     fastsim_track_phi.push_back( fastTrack->auxdata<float>("phi"));
     fastsim_track_d0.push_back( fastTrack->auxdata<float>("d0"));
     fastsim_track_z0.push_back( fastTrack->auxdata<float>("z0"));
-    fastsim_track_qop.push_back( fastTrack->auxdata<float>("qOverP"));
+    fastsim_track_qop.push_back( fastTrack->auxdata<float>("qOverP") * GeV);
     
     //fillBarcodeMap(hasBarcode_fastTrack,fastTrack,"fastTrack"); 
 
@@ -603,6 +628,7 @@ EL::StatusCode FTKReader :: execute ()
     if (!isAcceptedParticle(fullTrack)) continue;
     
     std::cout << "FTKFull pt " << fullTrack->pt() << std::endl;
+    fullsim_track_qinv2pt.push_back(  0.5 * GeV * fullTrack->charge() / fullTrack->pt() );
     fullsim_track_pt.push_back( fullTrack->pt() / GeV );
     fullsim_track_eta.push_back( fullTrack->eta() );
     fullsim_track_charge.push_back( fullTrack->charge() );
@@ -612,7 +638,7 @@ EL::StatusCode FTKReader :: execute ()
     fullsim_track_phi.push_back( fullTrack->auxdata<float>("phi"));
     fullsim_track_d0.push_back( fullTrack->auxdata<float>("d0"));
     fullsim_track_z0.push_back( fullTrack->auxdata<float>("z0"));
-    fullsim_track_qop.push_back( fullTrack->auxdata<float>("qOverP"));
+    fullsim_track_qop.push_back( fullTrack->auxdata<float>("qOverP") * GeV);
 
     //fillBarcodeMap(hasBarcode_fullTrack,fullTrack,"fullTrack"); 
   
@@ -627,6 +653,7 @@ EL::StatusCode FTKReader :: execute ()
     ++ioffline; 
     if (!isAcceptedParticle(offlineTrack)) continue;
     
+    offline_track_qinv2pt.push_back(  0.5 * GeV * offlineTrack->charge() / offlineTrack->pt() );
     offline_track_pt.push_back( offlineTrack->pt() / GeV);
     offline_track_eta.push_back( offlineTrack->eta() );
     offline_track_charge.push_back( offlineTrack->charge() );
@@ -636,7 +663,7 @@ EL::StatusCode FTKReader :: execute ()
     offline_track_phi.push_back( offlineTrack->auxdata<float>("phi"));
     offline_track_d0.push_back( offlineTrack->auxdata<float>("d0"));
     offline_track_z0.push_back( offlineTrack->auxdata<float>("z0"));
-    offline_track_qop.push_back( offlineTrack->auxdata<float>("qOverP"));
+    offline_track_qop.push_back( offlineTrack->auxdata<float>("qOverP") * GeV);
     
     //fillBarcodeMap(hasBarcode_offlineTrack,offlineTrack,"offlineTrack"); 
   
@@ -703,6 +730,7 @@ void FTKReader::AddBranches(TTree* tree) {
   if (m_truth && m_simulation) {
     tree->Branch("truth_track_n",       &truth_track_n,       "truth_track_n/I");
     
+    tree->Branch("truth_track_qinv2pt", &truth_track_qinv2pt );
     tree->Branch("truth_track_pt",      &truth_track_pt      );
     tree->Branch("truth_track_eta",     &truth_track_eta     );
     tree->Branch("truth_track_phi",     &truth_track_phi     );
@@ -724,6 +752,7 @@ void FTKReader::AddBranches(TTree* tree) {
 
 
 
+  tree->Branch("fastsim_track_qinv2pt",  &fastsim_track_qinv2pt   );
   tree->Branch("fastsim_track_pt",       &fastsim_track_pt        );
   tree->Branch("fastsim_track_eta",      &fastsim_track_eta       );
   tree->Branch("fastsim_track_phi",      &fastsim_track_phi       );
@@ -732,6 +761,7 @@ void FTKReader::AddBranches(TTree* tree) {
   tree->Branch("fastsim_track_qop",      &fastsim_track_qop       );
   tree->Branch("fastsim_track_theta",    &fastsim_track_theta     );
   
+  tree->Branch("fastsim_track_true_qinv2pt",  &fastsim_track_true_qinv2pt   );
   tree->Branch("fastsim_track_true_pt",       &fastsim_track_true_pt        );
   tree->Branch("fastsim_track_true_eta",      &fastsim_track_true_eta       );
   tree->Branch("fastsim_track_true_phi",      &fastsim_track_true_phi       );
@@ -740,6 +770,7 @@ void FTKReader::AddBranches(TTree* tree) {
   tree->Branch("fastsim_track_true_qop",      &fastsim_track_true_qop       );
   tree->Branch("fastsim_track_true_theta",    &fastsim_track_true_theta     );
   
+  tree->Branch("fastsim_track_delta_qinv2pt",  &fastsim_track_delta_qinv2pt   );
   tree->Branch("fastsim_track_delta_pt",       &fastsim_track_delta_pt        );
   tree->Branch("fastsim_track_delta_eta",      &fastsim_track_delta_eta       );
   tree->Branch("fastsim_track_delta_phi",      &fastsim_track_delta_phi       );
@@ -753,6 +784,7 @@ void FTKReader::AddBranches(TTree* tree) {
  
 
 
+  tree->Branch("fullsim_track_qinv2pt",  &fullsim_track_qinv2pt   );
   tree->Branch("fullsim_track_pt",       &fullsim_track_pt        );
   tree->Branch("fullsim_track_eta",      &fullsim_track_eta       );
   tree->Branch("fullsim_track_phi",      &fullsim_track_phi       );
@@ -761,6 +793,7 @@ void FTKReader::AddBranches(TTree* tree) {
   tree->Branch("fullsim_track_qop",      &fullsim_track_qop       );
   tree->Branch("fullsim_track_theta",    &fullsim_track_theta     );
   
+  tree->Branch("fullsim_track_true_qinv2pt",  &fullsim_track_true_qinv2pt   );
   tree->Branch("fullsim_track_true_pt",       &fullsim_track_true_pt        );
   tree->Branch("fullsim_track_true_eta",      &fullsim_track_true_eta       );
   tree->Branch("fullsim_track_true_phi",      &fullsim_track_true_phi       );
@@ -769,6 +802,7 @@ void FTKReader::AddBranches(TTree* tree) {
   tree->Branch("fullsim_track_true_qop",      &fullsim_track_true_qop       );
   tree->Branch("fullsim_track_true_theta",    &fullsim_track_true_theta     );
   
+  tree->Branch("fullsim_track_delta_qinv2pt",  &fullsim_track_delta_qinv2pt   );
   tree->Branch("fullsim_track_delta_pt",       &fullsim_track_delta_pt        );
   tree->Branch("fullsim_track_delta_eta",      &fullsim_track_delta_eta       );
   tree->Branch("fullsim_track_delta_phi",      &fullsim_track_delta_phi       );
@@ -782,6 +816,7 @@ void FTKReader::AddBranches(TTree* tree) {
  
 
 
+  tree->Branch("offline_track_qinv2pt",  &offline_track_qinv2pt   );
   tree->Branch("offline_track_pt",       &offline_track_pt        );
   tree->Branch("offline_track_eta",      &offline_track_eta       );
   tree->Branch("offline_track_phi",      &offline_track_phi       );
@@ -790,6 +825,7 @@ void FTKReader::AddBranches(TTree* tree) {
   tree->Branch("offline_track_qop",      &offline_track_qop       );
   tree->Branch("offline_track_theta",    &offline_track_theta     );
   
+  tree->Branch("offline_track_true_qinv2pt",  &offline_track_true_qinv2pt   );
   tree->Branch("offline_track_true_pt",       &offline_track_true_pt        );
   tree->Branch("offline_track_true_eta",      &offline_track_true_eta       );
   tree->Branch("offline_track_true_phi",      &offline_track_true_phi       );
@@ -798,6 +834,7 @@ void FTKReader::AddBranches(TTree* tree) {
   tree->Branch("offline_track_true_qop",      &offline_track_true_qop       );
   tree->Branch("offline_track_true_theta",    &offline_track_true_theta     );
   
+  tree->Branch("offline_track_delta_qinv2pt",  &offline_track_delta_qinv2pt   );
   tree->Branch("offline_track_delta_pt",       &offline_track_delta_pt        );
   tree->Branch("offline_track_delta_eta",      &offline_track_delta_eta       );
   tree->Branch("offline_track_delta_phi",      &offline_track_delta_phi       );
@@ -813,6 +850,7 @@ void FTKReader::AddBranches(TTree* tree) {
 
 void FTKReader::ResetBranches() {
 
+ truth_track_qinv2pt.clear();   
  truth_track_pt.clear();   
  truth_track_eta.clear();   
  truth_track_phi.clear();   
@@ -831,6 +869,7 @@ void FTKReader::ResetBranches() {
  truth_ismatched_offline.clear();
 
 
+ fastsim_track_qinv2pt.clear();   
  fastsim_track_pt.clear();   
  fastsim_track_eta.clear();   
  fastsim_track_phi.clear();   
@@ -839,6 +878,7 @@ void FTKReader::ResetBranches() {
  fastsim_track_qop.clear();  
  fastsim_track_theta.clear(); 
  
+ fastsim_track_true_qinv2pt.clear();   
  fastsim_track_true_pt.clear();   
  fastsim_track_true_eta.clear();   
  fastsim_track_true_phi.clear();   
@@ -847,6 +887,7 @@ void FTKReader::ResetBranches() {
  fastsim_track_true_qop.clear();  
  fastsim_track_true_theta.clear(); 
  
+ fastsim_track_delta_qinv2pt.clear();   
  fastsim_track_delta_pt.clear();   
  fastsim_track_delta_eta.clear();   
  fastsim_track_delta_phi.clear();   
@@ -858,6 +899,7 @@ void FTKReader::ResetBranches() {
  fastsim_track_charge.clear();
  //fastsim_track_ismatched.clear();
  
+ fullsim_track_qinv2pt.clear();   
  fullsim_track_pt.clear();   
  fullsim_track_eta.clear();   
  fullsim_track_phi.clear();   
@@ -866,6 +908,7 @@ void FTKReader::ResetBranches() {
  fullsim_track_qop.clear();  
  fullsim_track_theta.clear(); 
  
+ fullsim_track_true_qinv2pt.clear();   
  fullsim_track_true_pt.clear();   
  fullsim_track_true_eta.clear();   
  fullsim_track_true_phi.clear();   
@@ -874,6 +917,7 @@ void FTKReader::ResetBranches() {
  fullsim_track_true_qop.clear();  
  fullsim_track_true_theta.clear(); 
  
+ fullsim_track_delta_qinv2pt.clear();   
  fullsim_track_delta_pt.clear();   
  fullsim_track_delta_eta.clear();   
  fullsim_track_delta_phi.clear();   
@@ -885,6 +929,7 @@ void FTKReader::ResetBranches() {
  fullsim_track_charge.clear();
  //fullsim_track_ismatched.clear();
  
+ offline_track_qinv2pt.clear();   
  offline_track_pt.clear();   
  offline_track_eta.clear();   
  offline_track_phi.clear();   
@@ -893,6 +938,7 @@ void FTKReader::ResetBranches() {
  offline_track_qop.clear();  
  offline_track_theta.clear(); 
  
+ offline_track_true_qinv2pt.clear();   
  offline_track_true_pt.clear();   
  offline_track_true_eta.clear();   
  offline_track_true_phi.clear();   
@@ -901,6 +947,7 @@ void FTKReader::ResetBranches() {
  offline_track_true_qop.clear();  
  offline_track_true_theta.clear(); 
  
+ offline_track_delta_qinv2pt.clear();   
  offline_track_delta_pt.clear();   
  offline_track_delta_eta.clear();   
  offline_track_delta_phi.clear();   

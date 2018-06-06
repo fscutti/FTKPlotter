@@ -32,10 +32,37 @@ void ATestRun (const std::string& submitDir)
   //SH::ScanDir().filePattern("InDetDxAOD.pool.root").scan(sh,inputFilePath);
  
   // output from the grid 
-  const char* inputFilePath = gSystem->ExpandPathName ("/data/fscutti/FTKSamples/output/user.fscutti.26Nov11_EXT0");
-  SH::ScanDir().filePattern("user.fscutti.12680603.EXT0._000001.InDetDxAOD.pool.root").scan(sh,inputFilePath);
+  //const char* inputFilePath = gSystem->ExpandPathName ("/data/fscutti/FTKSamples/output/user.fscutti.26Nov11_EXT0");
+  //SH::ScanDir().filePattern("user.fscutti.12680603.EXT0._000001.InDetDxAOD.pool.root").scan(sh,inputFilePath);
 
+  // complete output, but incorrect sectors (lots of events!!!)
+  //const char* inputFilePath = gSystem->ExpandPathName ("/data/fscutti/FTKSamples/output");
+  //SH::ScanDir().filePattern("merged.root").scan(sh,inputFilePath);
+  
+  // complete output with correct sectors (lots of events!!!)
+  //const char* inputFilePath = gSystem->ExpandPathName ("/data/fscutti/FTKSamples/output_5Dec");
+  //SH::ScanDir().filePattern("merged_5Dec.root").scan(sh,inputFilePath);
+  
+  // alternative smearing approach (lots of events!!!)
+  //const char* inputFilePath = gSystem->ExpandPathName ("/data/fscutti/FTKSamples/output_11Dec");
+  //SH::ScanDir().filePattern("merged_11Dec.root").scan(sh,inputFilePath);
 
+  // bugged constants from Jason (lots of events!!!)
+  //const char* inputFilePath = gSystem->ExpandPathName ("/data/fscutti/FTKSamples/output_8Feb");
+  //SH::ScanDir().filePattern("merged_8Feb.root").scan(sh,inputFilePath);
+  
+  // debugged constants
+  //const char* inputFilePath = gSystem->ExpandPathName ("/data/fscutti/FTKSamples/output_14Feb");
+  //SH::ScanDir().filePattern("merged_14Feb.root").scan(sh,inputFilePath);
+  
+  // debugged constants eta propagation formula
+  //const char* inputFilePath = gSystem->ExpandPathName ("/data/fscutti/FTKSamples/output_10Apr");
+  //SH::ScanDir().filePattern("merged_10Apr.root").scan(sh,inputFilePath);
+  
+  // debugged flat eta trend
+  const char* inputFilePath = gSystem->ExpandPathName ("/data/fscutti/FTKSamples/output_12Apr");
+  SH::ScanDir().filePattern("merged_12Apr.root").scan(sh,inputFilePath);
+  
   // set the name of the tree in our files
   // in the xAOD the TTree containing the EDM containers is "CollectionTree"
   sh.setMetaString ("nc_tree", "CollectionTree");
@@ -54,12 +81,20 @@ void ATestRun (const std::string& submitDir)
   //std::string configName = "./FTKReader/config/FTKReader.config";
   //TEnv* config = new TEnv(configName.c_str());
   
-  float minPT  = 1000; // MeV
-  float maxEta = 2.4;
+  //float minPT  = 1000; // MeV
+  //float maxEta = 2.4;
+  //float maxPhi = 3.14;
+  //float maxD0  = 2.;
+  //float maxZ0  = 100.;
+ 
+  // tighter for full efficiency
+  float minPT  = 5000; // MeV
+  float maxEta = 1.;
   float maxPhi = 3.14;
-  float maxD0  = 2.;
+  float maxD0  = 0.2;
   float maxZ0  = 100.;
-  
+
+
   //float minPT  = 0.0; // MeV
   //float maxEta = 1000.;
   //float maxPhi = 1000.;

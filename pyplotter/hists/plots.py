@@ -4,8 +4,9 @@
 plot.py
 description: plot class 
 '''
-
+#from numba import jit
 import ROOT
+import math
 
 # - - - - - - - - - - - class defs  - - - - - - - - - - - - #
 #------------------------------------------------------------
@@ -15,40 +16,48 @@ class Plot1D(object):
     '''
     #________________________________________________________
     def __init__(self,
-            pname      = None,
-            xtitle     = None,
-            ytitle     = None,
-            hlist      = None,
-            xmin       = None,
-            xmax       = None,
-            ymin       = None,
-            ymax       = None,
-            ratio_num  = None,
-            ratio_den  = None,
-            instance   = None,
-            leg_head   = None,
-            plot_stat  = None,
+            pname            = None,
+            xtitle           = None,
+            ytitle           = None,
+            hlist            = None,
+            xmin             = None,
+            xmax             = None,
+            ymin             = 0.,
+            ymax             = None,
+            ratio_num        = None,
+            ratio_den        = [],
+            instance         = None,
+            leg_head         = None,
+            plot_stat        = False,
+            draw_line        = False,
+            compare_shapes   = False,
+            outfile          = None,
+            plot_ineff_ratio = False,
             **kw):
 
-       self.pname      = pname
-       self.xtitle     = xtitle
-       self.ytitle     = ytitle
-       self.hlist      = hlist
-       self.xmin       = xmin
-       self.xmax       = xmax
-       self.ymin       = ymin
-       self.ymax       = ymax
-       self.ratio_num  = ratio_num
-       self.ratio_den  = ratio_den
-       self.instance   = instance
-       self.leg_head   = leg_head
-       self.plot_stat  = plot_stat
+       self.pname            = pname
+       self.xtitle           = xtitle
+       self.ytitle           = ytitle
+       self.hlist            = hlist
+       self.xmin             = xmin
+       self.xmax             = xmax
+       self.ymin             = ymin
+       self.ymax             = ymax
+       self.ratio_num        = ratio_num
+       self.ratio_den        = ratio_den
+       self.instance         = instance
+       self.leg_head         = leg_head
+       self.plot_stat        = plot_stat
+       self.draw_line        = draw_line
+       self.compare_shapes   = compare_shapes
+       self.outfile          = outfile
+       self.plot_ineff_ratio = plot_ineff_ratio
 
        ## set additional key-word args
        # ----------------------------------------------------
        for k,w in kw.iteritems():
            setattr(self, k, w)
-
+   
     #________________________________________________________
     def get_name(self):
        return self.__class__.__name__
@@ -61,17 +70,46 @@ class Plot1D(object):
          if h != self.ratio_num:
            self.ratio_den.append(h)
        return
+
+    #________________________________________________________
+    def get_hist(self,hname):
+       """
+       check that histograms on the store have been filled
+       """
+       assert hname in self.hstore.keys(), "ERROR: required hist %s not in store"%hname
+       h = self.hstore[hname]
+       if not h.instance: 
+         h.create_hist(self.chain)
+       return h
+
+    #________________________________________________________
+    def get_max(self,hname):
+       """
+       get maximum of histogram
+       """
+       maximum = 0.
+       if hname in self.hlist:
+         h = self.get_hist(hname)
+         hmax = h.instance.Clone()
+         if self.compare_shapes:
+           hmax.Scale(1./hmax.Integral())
+         maximum = max(maximum, hmax.GetMaximum())
+       return maximum
     
     #________________________________________________________
     def get_plot(self):
       
       if self.ratio_num and not self.ratio_den: self.set_den()
-
-      nLegend = len([self.ratio_num]+self.ratio_den) + 1
+      
+      """
+      nLegend = len(self.ratio_den) + 1
+      if self.ratio_num: nLegend += 1
+     
       x_legend    = 0.5
       x_leg_shift = -0.055
       y_leg_shift = 0.0
       legYCompr   = 8.0
+      if not self.plot_stat: legYCompr = 2.0
       legYMax     = 0.85
       legYMin     = legYMax - (legYMax - (0.55 + y_leg_shift)) / legYCompr * nLegend
       legXMin     = x_legend + x_leg_shift
@@ -82,14 +120,17 @@ class Plot1D(object):
         legXMin -= 0.005
         legXMax -= 0.058
       leg = ROOT.TLegend(legXMin,legYMin,legXMax,legYMax)
+      """
+      
+      ##leg = ROOT.TLegend(0.53,0.73,0.9,0.86)
+      leg = ROOT.TLegend(0.5,0.9,0.9,1.0)
       leg.SetBorderSize(0)
       leg.SetFillColor(0)
       leg.SetFillStyle(0)
       leg.SetHeader(self.leg_head)
 
-      cname = "c_%s"%self.pname
-      if self.ratio_num: c = ROOT.TCanvas(cname,cname,750,800)
-      else: c = ROOT.TCanvas(cname,cname,800,700)
+      if self.ratio_num: c = ROOT.TCanvas(self.pname,self.pname,750,800)
+      else: c = ROOT.TCanvas(self.pname,self.pname,800,700)
       
       rsplit = 0.0
       if self.ratio_num: rsplit = 0.3
@@ -118,6 +159,19 @@ class Plot1D(object):
         pad2.Draw()
       
       pad1.cd()
+      
+      h_main_list = []      
+      
+      ymax = 0.0 
+      
+      for hname in self.hlist:
+        hist = self.get_hist(hname)
+        h_main_list.append(hist)
+        
+        ymax = max(ymax,self.get_max(hname)) 
+      
+      if not self.ymax:
+        self.ymax = ymax * 1.2
 
       fr1 = pad1.DrawFrame(self.xmin,self.ymin,self.xmax,self.ymax,';%s;%s'%(self.xtitle,self.ytitle))
       if self.ratio_num:
@@ -130,7 +184,7 @@ class Plot1D(object):
       
       if not self.ratio_num:
         xaxis1.SetTitleSize( xaxis1.GetTitleSize() * scale )
-        xaxis1.SetLabelSize( 0.9 * xaxis1.GetLabelSize() * scale )
+        xaxis1.SetLabelSize( 0.7 * xaxis1.GetLabelSize() * scale )
         xaxis1.SetTickLength( xaxis1.GetTickLength() * scale )
         xaxis1.SetTitleOffset( 1.3 * xaxis1.GetTitleOffset() / scale )
         xaxis1.SetLabelOffset( 1.0 * xaxis1.GetLabelOffset() / scale )
@@ -142,10 +196,18 @@ class Plot1D(object):
       xaxis1.SetNdivisions(510)
       yaxis1.SetNdivisions(510)
       
-      pad1.cd()
       
-      for hname,hist in self.hstore.iteritems():
-        hist.instance.Draw("SAME,E1")
+      for hist in h_main_list:
+        opt = "E1"
+        if self.draw_line: opt = "L"
+        # this would be better cloned 
+        # but it leads to plotting problems
+        # only the last histogram is plotted
+        h_plot = hist.instance
+        if self.compare_shapes:
+          h_plot.Scale(1./h_plot.Integral())
+        h_plot.Draw("SAME,%s"%opt)
+        
         stat_info = hist.leg_entry
         if self.plot_stat:
           mean = hist.instance.GetMean()
@@ -156,69 +218,106 @@ class Plot1D(object):
             "RMS: %s"%float('%.2g' % sigma) 
             ])
         leg.AddEntry(hist.instance,stat_info, "PL")
-      
+       
       leg.Draw()
-
-      pad1.RedrawAxis()
       
+      pad1.RedrawAxis()
+
       if self.ratio_num:
+
+        h_ratio_list = []
+        
+        ymax2 = 2.0
+
+        for hr_name in self.ratio_den:
+          h_ratio_num = self.get_hist(self.ratio_num).instance.Clone()
+          h_ratio_den = self.get_hist(hr_name).instance.Clone()
+          
+          if self.compare_shapes:
+            h_ratio_num.Scale(1./h_ratio_num.Integral())
+            h_ratio_den.Scale(1./h_ratio_den.Integral())
+         
+          h_ratio = h_ratio_num
+          h_ratio.Divide(h_ratio_den)
+
+
+          if "line_style" in self.get_hist(hr_name).style_dict.keys():
+            h_ratio.SetLineStyle(self.get_hist(hr_name).style_dict["line_style"])
+          if "line_color" in self.get_hist(hr_name).style_dict.keys():
+            h_ratio.SetLineColor(self.get_hist(hr_name).style_dict["line_color"])
+          if "line_width" in self.get_hist(hr_name).style_dict.keys():
+            h_ratio.SetLineWidth(self.get_hist(hr_name).style_dict["line_width"])
+          
+          if "marker_style" in self.get_hist(hr_name).style_dict.keys():
+            h_ratio.SetMarkerStyle(self.get_hist(hr_name).style_dict["marker_style"])
+          if "marker_color" in self.get_hist(hr_name).style_dict.keys():
+            h_ratio.SetMarkerColor(self.get_hist(hr_name).style_dict["marker_color"])
+          if "marker_size" in self.get_hist(hr_name).style_dict.keys():
+            h_ratio.SetMarkerSize(self.get_hist(hr_name).style_dict["marker_size"])
+
+          h_ratio.SetNameTitle('%s_div_%s'%(self.get_hist(self.ratio_num).hname,self.get_hist(hr_name).hname),'%s_div_%s'%(self.get_hist(self.ratio_num).hname,self.get_hist(hr_name).hname)) 
+          
+          ymax2 = min(max(ymax2,h_ratio.GetMaximum()),12.)
+
+          h_ratio_list.append(h_ratio)
+
         pad2.cd()
-        den_title = self.hstore[self.ratio_den[0]].leg_entry
+        den_title = self.get_hist(self.ratio_den[0]).leg_entry
+        
+        framey_max = 1.1*ymax2
+        framey_min = 0.0
+
         if len(self.ratio_den)>1:den_title = "X"
-        fr2 = pad2.DrawFrame(self.xmin,0.49,self.xmax,1.51,';%s;%s / %s'%(self.xtitle, self.hstore[self.ratio_num].leg_entry, den_title ))
+        
+        if self.plot_ineff_ratio:
+          framey_max = 0.6
+          framey_min = 0.0
+
+        fr2 = pad2.DrawFrame(self.xmin,framey_min,self.xmax,framey_max,';%s;%s / %s'%(self.xtitle, self.get_hist(self.ratio_num).leg_entry, den_title ))
         xaxis2 = fr2.GetXaxis()
         yaxis2 = fr2.GetYaxis()
         scale = (1. / rsplit)
         yaxis2.SetTitleSize(0.7 * yaxis2.GetTitleSize() * scale )
         
         yaxis2.SetLabelSize( yaxis2.GetLabelSize() * scale )
-        yaxis2.SetTitleOffset( 0.7 * yaxis2.GetTitleOffset() / scale  )
+        yaxis2.SetTitleOffset( 2.2 * yaxis2.GetTitleOffset() / scale  )
         yaxis2.SetLabelOffset(0.4 * yaxis2.GetLabelOffset() * scale )
         xaxis2.SetTitleSize( xaxis2.GetTitleSize() * scale )
         xaxis2.SetLabelSize( 0.8 * xaxis2.GetLabelSize() * scale )
         xaxis2.SetTickLength( xaxis2.GetTickLength() * scale )
         xaxis2.SetTitleOffset( 3.2* xaxis2.GetTitleOffset() / scale  )
         xaxis2.SetLabelOffset( 2.5* xaxis2.GetLabelOffset() / scale )
-        yaxis2.SetNdivisions(510)
+        yaxis2.SetNdivisions(508)
         xaxis2.SetNdivisions(510)
         
-        h_ratio_list = []
-        
-        for hr_name in self.ratio_den:
-          h_ratio = self.hstore[self.ratio_num].instance.Clone()
-          h_ratio.Divide(self.hstore[hr_name].instance)
-          
-          if "line_style" in self.hstore[hr_name].style_dict.keys():
-            h_ratio.SetLineStyle(self.hstore[hr_name].style_dict["line_style"])
-          if "line_color" in self.hstore[hr_name].style_dict.keys():
-            h_ratio.SetLineColor(self.hstore[hr_name].style_dict["line_color"])
-          if "line_width" in self.hstore[hr_name].style_dict.keys():
-            h_ratio.SetLineWidth(self.hstore[hr_name].style_dict["line_width"])
-          
-          if "marker_style" in self.hstore[hr_name].style_dict.keys():
-            h_ratio.SetMarkerStyle(self.hstore[hr_name].style_dict["marker_style"])
-          if "marker_color" in self.hstore[hr_name].style_dict.keys():
-            h_ratio.SetMarkerColor(self.hstore[hr_name].style_dict["marker_color"])
-          if "marker_size" in self.hstore[hr_name].style_dict.keys():
-            h_ratio.SetMarkerSize(self.hstore[hr_name].style_dict["marker_size"]+1)
-
-          h_ratio.SetNameTitle('%s_div_%s'%(self.hstore[self.ratio_num].hname,self.hstore[hr_name].hname),'%s_div_%s'%(self.hstore[self.ratio_num].hname,self.hstore[hr_name].hname)) 
-          h_ratio_list.append(h_ratio)
-        
         for hr in h_ratio_list: 
+          if self.plot_ineff_ratio:
+            for ib in xrange(hr.GetNbinsX()):
+              hr.SetBinContent(ib, 1.-hr.GetBinContent(ib))
           hr.Draw("SAME,E1")
         
         pad2.RedrawAxis()
        
-      c.SaveAs(cname+".eps")
+      c.SaveAs(c.GetName()+".eps")
+      c.Close()
+
+      for hist in h_main_list:
+        if hist.slices:
+          for ibin,bin_dict in hist.slices.iteritems():
+            if len(bin_dict["entries"]):
+
+               c_ibin = ROOT.TCanvas("c_"+bin_dict["h_slice"].GetName(),"c_"+bin_dict["h_slice"].GetName(),800,800)
+               c_ibin.SetTickx()
+               c_ibin.SetTicky()
+               c_ibin.cd()
+               bin_dict["h_slice"].Draw("HIST")
+               bin_dict["slice_fit"].Draw("SAME")
+               c_ibin.SaveAs("./slices/"+c_ibin.GetName()+".eps")
+               c_ibin.Close()
+               #ROOT.gSystem.ProcessEvents()
+
+      return 
 
 
 ## EOF
-
-
-
-
-
-
-
 

@@ -9,7 +9,7 @@
 #alias setupATLAS='source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh'
 #setupATLAS
 
-release=21.2.8
+release=21.2.16
 project="AnalysisBase"
 
 echo ""

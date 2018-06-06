@@ -86,6 +86,7 @@ public:
   // truth
   // --------------- 
   std::vector<float> truth_track_pt,
+                     truth_track_qinv2pt,
                      truth_track_eta,
                      truth_track_phi,
                      truth_track_d0,
@@ -106,6 +107,7 @@ public:
   // fast simulation 
   // --------------- 
   std::vector<float> fastsim_track_pt,
+                     fastsim_track_qinv2pt,
                      fastsim_track_eta,
                      fastsim_track_phi,
                      fastsim_track_d0,
@@ -113,7 +115,8 @@ public:
                      fastsim_track_qop,
                      fastsim_track_theta;
   
-  std::vector<float> fastsim_track_true_pt,
+  std::vector<float> fastsim_track_true_qinv2pt,
+                     fastsim_track_true_pt,
                      fastsim_track_true_eta,
                      fastsim_track_true_phi,
                      fastsim_track_true_d0,
@@ -122,6 +125,7 @@ public:
                      fastsim_track_true_theta;
   
   std::vector<float> fastsim_track_delta_pt,
+                     fastsim_track_delta_qinv2pt,
                      fastsim_track_delta_eta,
                      fastsim_track_delta_phi,
                      fastsim_track_delta_d0,
@@ -138,6 +142,7 @@ public:
   // full simulation 
   // --------------- 
   std::vector<float> fullsim_track_pt,
+                     fullsim_track_qinv2pt,
                      fullsim_track_eta,
                      fullsim_track_phi,
                      fullsim_track_d0,
@@ -145,7 +150,8 @@ public:
                      fullsim_track_qop,
                      fullsim_track_theta;
   
-  std::vector<float> fullsim_track_true_pt,
+  std::vector<float> fullsim_track_true_qinv2pt,
+                     fullsim_track_true_pt,
                      fullsim_track_true_eta,
                      fullsim_track_true_phi,
                      fullsim_track_true_d0,
@@ -154,6 +160,7 @@ public:
                      fullsim_track_true_theta;
   
   std::vector<float> fullsim_track_delta_pt,
+                     fullsim_track_delta_qinv2pt,
                      fullsim_track_delta_eta,
                      fullsim_track_delta_phi,
                      fullsim_track_delta_d0,
@@ -169,6 +176,7 @@ public:
   // offline
   // --------------- 
   std::vector<float> offline_track_pt,
+                     offline_track_qinv2pt,
                      offline_track_eta,
                      offline_track_phi,
                      offline_track_d0,
@@ -176,7 +184,8 @@ public:
                      offline_track_qop,
                      offline_track_theta;
   
-  std::vector<float> offline_track_true_pt,
+  std::vector<float> offline_track_true_qinv2pt,
+                     offline_track_true_pt,
                      offline_track_true_eta,
                      offline_track_true_phi,
                      offline_track_true_d0,
@@ -185,6 +194,7 @@ public:
                      offline_track_true_theta;
   
   std::vector<float> offline_track_delta_pt,
+                     offline_track_delta_qinv2pt,
                      offline_track_delta_eta,
                      offline_track_delta_phi,
                      offline_track_delta_d0,
