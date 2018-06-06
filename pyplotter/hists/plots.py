@@ -266,11 +266,10 @@ class Plot1D(object):
         
         framey_max = 1.1*ymax2
         framey_min = 0.0
-
         if len(self.ratio_den)>1:den_title = "X"
         
         if self.plot_ineff_ratio:
-          framey_max = 0.6
+          framey_max = framey_max / 12.
           framey_min = 0.0
 
         fr2 = pad2.DrawFrame(self.xmin,framey_min,self.xmax,framey_max,';%s;%s / %s'%(self.xtitle, self.get_hist(self.ratio_num).leg_entry, den_title ))
@@ -279,7 +278,10 @@ class Plot1D(object):
         scale = (1. / rsplit)
         yaxis2.SetTitleSize(0.7 * yaxis2.GetTitleSize() * scale )
         
-        yaxis2.SetLabelSize( yaxis2.GetLabelSize() * scale )
+        if self.plot_ineff_ratio:
+          yaxis2.SetLabelSize( yaxis2.GetLabelSize() * scale * 0.5 )
+        else:
+          yaxis2.SetLabelSize( yaxis2.GetLabelSize() * scale  )
         yaxis2.SetTitleOffset( 2.2 * yaxis2.GetTitleOffset() / scale  )
         yaxis2.SetLabelOffset(0.4 * yaxis2.GetLabelOffset() * scale )
         xaxis2.SetTitleSize( xaxis2.GetTitleSize() * scale )
@@ -287,7 +289,7 @@ class Plot1D(object):
         xaxis2.SetTickLength( xaxis2.GetTickLength() * scale )
         xaxis2.SetTitleOffset( 3.2* xaxis2.GetTitleOffset() / scale  )
         xaxis2.SetLabelOffset( 2.5* xaxis2.GetLabelOffset() / scale )
-        yaxis2.SetNdivisions(508)
+        yaxis2.SetNdivisions(510)
         xaxis2.SetNdivisions(510)
         
         for hr in h_ratio_list: 

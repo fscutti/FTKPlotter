@@ -72,7 +72,83 @@ for typ in ["fastsim", "fullsim", "offline"]:
                                                          style_dict = globals()["%s_style"%typ],
                                                          )
   hlist.append(globals()["h_truth_%s_eff_track_pt"%typ])
- 
+
+
+
+  globals()["h_truth_%s_eff_track_qinv2pt"%typ] = Hist( hname              = "h_truth_%s_eff_track_qinv2pt"%typ,
+                                                         leg_entry      = typ,
+                                                         xtitle         = "q/2p_{T}(#mu) [GeV^{-1}]",
+                                                         ytitle         = "Entries",
+                                                         nbins          = 50,
+                                                         xmin           = -0.6,
+                                                         xmax           = 0.6,
+                                                         var_fill       = "truth_track_qinv2pt",
+                                                         num_selection  = "truth_ismatched_%s==1"%(typ),
+                                                         style_dict = globals()["%s_style"%typ],
+                                                         )
+  hlist.append(globals()["h_truth_%s_eff_track_qinv2pt"%typ])
+
+
+
+  globals()["h_truth_%s_eff_track_eta"%typ] = Hist( hname              = "h_truth_%s_eff_track_eta"%typ,
+                                                         leg_entry      = typ,
+                                                         xtitle         = "#eta(#mu)",
+                                                         ytitle         = "Entries",
+                                                         nbins          = 50,
+                                                         xmin           = -2.5,
+                                                         xmax           = 2.5,
+                                                         var_fill       = "truth_track_eta",
+                                                         num_selection  = "truth_ismatched_%s==1"%(typ),
+                                                         style_dict = globals()["%s_style"%typ],
+                                                         )
+  hlist.append(globals()["h_truth_%s_eff_track_eta"%typ])
+
+
+
+  globals()["h_truth_%s_eff_track_phi"%typ] = Hist( hname              = "h_truth_%s_eff_track_phi"%typ,
+                                                         leg_entry      = typ,
+                                                         xtitle         = "#phi(#mu)",
+                                                         ytitle         = "Entries",
+                                                         nbins          = 50,
+                                                         xmin           = -3.14,
+                                                         xmax           = 3.14,
+                                                         var_fill       = "truth_track_phi",
+                                                         num_selection  = "truth_ismatched_%s==1"%(typ),
+                                                         style_dict = globals()["%s_style"%typ],
+                                                         )
+  hlist.append(globals()["h_truth_%s_eff_track_phi"%typ])
+
+
+
+  globals()["h_truth_%s_eff_track_d0"%typ] = Hist( hname              = "h_truth_%s_eff_track_d0"%typ,
+                                                         leg_entry      = typ,
+                                                         xtitle         = "d_{0}(#mu) [mm]",
+                                                         ytitle         = "Entries",
+                                                         nbins          = 50,
+                                                         xmin           = -2.5,
+                                                         xmax           = 2.5,
+                                                         var_fill       = "truth_track_d0",
+                                                         num_selection  = "truth_ismatched_%s==1"%(typ),
+                                                         style_dict = globals()["%s_style"%typ],
+                                                         )
+  hlist.append(globals()["h_truth_%s_eff_track_d0"%typ])
+
+
+
+  globals()["h_truth_%s_eff_track_z0"%typ] = Hist( hname              = "h_truth_%s_eff_track_z0"%typ,
+                                                         leg_entry      = typ,
+                                                         xtitle         = "z_{0}(#mu) [mm]",
+                                                         ytitle         = "Entries",
+                                                         nbins          = 50,
+                                                         xmin           = -110.,
+                                                         xmax           = 110.,
+                                                         var_fill       = "truth_track_z0",
+                                                         num_selection  = "truth_ismatched_%s==1"%(typ),
+                                                         style_dict = globals()["%s_style"%typ],
+                                                         )
+  hlist.append(globals()["h_truth_%s_eff_track_z0"%typ])
+
+
 
   # ---------------------
   # inclusive resolutions

@@ -19,12 +19,72 @@ p_track_pt  = Plot1D( pname      = "p_track_pt",
 
 p_eff_pt  = Plot1D( pname               = "p_eff_pt",
                       leg_head          = "#varepsilon(p_{T})",
-                      ratio_num         = "h_truth_full_eff_track_pt", # give full eff for inefficiency ratio
+                      ratio_num         = "h_truth_fullsim_eff_track_pt", # give full eff for inefficiency ratio
                       hlist             = ["h_truth_fastsim_eff_track_pt","h_truth_fullsim_eff_track_pt",],
                       xtitle            = "p_{T}(#mu) [GeV]",
                       ytitle            = "Efficiency",
                       xmin              = 0.,
                       xmax              = 200.,
+                      ymin              = 0.,
+                      plot_ineff_ratio  = True,
+                     )
+
+p_eff_qinv2pt  = Plot1D( pname          = "p_eff_qinv2pt",
+                      leg_head          = "#varepsilon(q/2p_{T})",
+                      ratio_num         = "h_truth_fullsim_eff_track_qinv2pt", # give full eff for inefficiency ratio
+                      hlist             = ["h_truth_fastsim_eff_track_qinv2pt","h_truth_fullsim_eff_track_qinv2pt",],
+                      xtitle            = "q/2p_{T}(#mu) [GeV^{-1}]",
+                      ytitle            = "Efficiency",
+                      xmin              = -0.6,
+                      xmax              = 0.6,
+                      ymin              = 0.,
+                      plot_ineff_ratio  = True,
+                     )
+
+p_eff_eta  = Plot1D( pname               = "p_eff_eta",
+                      leg_head          = "#varepsilon(#eta)",
+                      ratio_num         = "h_truth_fullsim_eff_track_eta", # give full eff for inefficiency ratio
+                      hlist             = ["h_truth_fastsim_eff_track_eta","h_truth_fullsim_eff_track_eta",],
+                      xtitle            = "#eta(#mu)",
+                      ytitle            = "Efficiency",
+                      xmin              = -2.5,
+                      xmax              = 2.5,
+                      ymin              = 0.,
+                      plot_ineff_ratio  = True,
+                     )
+
+p_eff_phi  = Plot1D( pname               = "p_eff_phi",
+                      leg_head          = "#varepsilon(#phi)",
+                      ratio_num         = "h_truth_fullsim_eff_track_phi", # give full eff for inefficiency ratio
+                      hlist             = ["h_truth_fastsim_eff_track_phi","h_truth_fullsim_eff_track_phi",],
+                      xtitle            = "#phi(#mu)",
+                      ytitle            = "Efficiency",
+                      xmin              = -3.14,
+                      xmax              = 3.14,
+                      ymin              = 0.,
+                      plot_ineff_ratio  = True,
+                     )
+
+p_eff_d0  = Plot1D( pname               = "p_eff_d0",
+                      leg_head          = "#varepsilon(d_{0})",
+                      ratio_num         = "h_truth_fullsim_eff_track_d0", # give full eff for inefficiency ratio
+                      hlist             = ["h_truth_fastsim_eff_track_d0","h_truth_fullsim_eff_track_d0",],
+                      xtitle            = "d_{0}(#mu) [mm]",
+                      ytitle            = "Efficiency",
+                      xmin              = -2.5,
+                      xmax              = 2.5,
+                      ymin              = 0.,
+                      plot_ineff_ratio  = True,
+                     )
+
+p_eff_z0  = Plot1D( pname               = "p_eff_z0",
+                      leg_head          = "#varepsilon(z_{0})",
+                      ratio_num         = "h_truth_fullsim_eff_track_z0", # give full eff for inefficiency ratio
+                      hlist             = ["h_truth_fastsim_eff_track_z0","h_truth_fullsim_eff_track_z0",],
+                      xtitle            = "z_{0}(#mu) [mm]",
+                      ytitle            = "Efficiency",
+                      xmin              = -110.,
+                      xmax              = 110.,
                       ymin              = 0.,
                       plot_ineff_ratio  = True,
                      )
@@ -269,6 +329,11 @@ p_track_reso_z0_vs_truth_track_eta  = Plot1D( pname  = "p_track_reso_z0_vs_truth
 plist = []
 #plist.append(p_track_pt)
 plist.append(p_eff_pt)
+plist.append(p_eff_qinv2pt)
+plist.append(p_eff_eta)
+plist.append(p_eff_phi)
+plist.append(p_eff_d0)
+plist.append(p_eff_z0)
 
 """
 # inclusive distributions
