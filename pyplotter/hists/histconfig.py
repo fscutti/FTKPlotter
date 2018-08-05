@@ -21,7 +21,7 @@ for typ in ["truth", "fastsim", "fullsim", "offline"]:
   # kinematics
   # ----------
    
-  globals()["h_%s_track_pt"%typ] = Hist( hname      = "h_%s_track_pt"%typ,
+  globals()["h_%s_track_pt"%typ] = Hist1D( hname      = "h_%s_track_pt"%typ,
                                            leg_entry  = typ,
                                            xtitle     = "p_{T}(#mu) [GeV]",
                                            ytitle     = "Entries",
@@ -42,7 +42,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   # truth matched
   # -------------
    
-  globals()["h_truth_%s_matched_track_pt"%typ] = Hist( hname      = "h_truth_%s_matched_track_pt"%typ,
+  globals()["h_truth_%s_matched_track_pt"%typ] = Hist1D( hname      = "h_truth_%s_matched_track_pt"%typ,
                                                          leg_entry  = typ,
                                                          xtitle     = "p_{T}(#mu) [GeV]",
                                                          ytitle     = "Entries",
@@ -60,7 +60,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   # efficiencies
   # ------------
 
-  globals()["h_truth_%s_eff_track_pt"%typ] = Hist( hname              = "h_truth_%s_eff_track_pt"%typ,
+  globals()["h_truth_%s_eff_track_pt"%typ] = Hist1D( hname              = "h_truth_%s_eff_track_pt"%typ,
                                                          leg_entry      = typ,
                                                          xtitle         = "p_{T}(#mu) [GeV]",
                                                          ytitle         = "Entries",
@@ -75,7 +75,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
 
 
 
-  globals()["h_truth_%s_eff_track_qinv2pt"%typ] = Hist( hname              = "h_truth_%s_eff_track_qinv2pt"%typ,
+  globals()["h_truth_%s_eff_track_qinv2pt"%typ] = Hist1D( hname              = "h_truth_%s_eff_track_qinv2pt"%typ,
                                                          leg_entry      = typ,
                                                          xtitle         = "q/2p_{T}(#mu) [GeV^{-1}]",
                                                          ytitle         = "Entries",
@@ -90,7 +90,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
 
 
 
-  globals()["h_truth_%s_eff_track_eta"%typ] = Hist( hname              = "h_truth_%s_eff_track_eta"%typ,
+  globals()["h_truth_%s_eff_track_eta"%typ] = Hist1D( hname              = "h_truth_%s_eff_track_eta"%typ,
                                                          leg_entry      = typ,
                                                          xtitle         = "#eta(#mu)",
                                                          ytitle         = "Entries",
@@ -105,7 +105,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
 
 
 
-  globals()["h_truth_%s_eff_track_phi"%typ] = Hist( hname              = "h_truth_%s_eff_track_phi"%typ,
+  globals()["h_truth_%s_eff_track_phi"%typ] = Hist1D( hname              = "h_truth_%s_eff_track_phi"%typ,
                                                          leg_entry      = typ,
                                                          xtitle         = "#phi(#mu)",
                                                          ytitle         = "Entries",
@@ -120,7 +120,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
 
 
 
-  globals()["h_truth_%s_eff_track_d0"%typ] = Hist( hname              = "h_truth_%s_eff_track_d0"%typ,
+  globals()["h_truth_%s_eff_track_d0"%typ] = Hist1D( hname              = "h_truth_%s_eff_track_d0"%typ,
                                                          leg_entry      = typ,
                                                          xtitle         = "d_{0}(#mu) [mm]",
                                                          ytitle         = "Entries",
@@ -135,7 +135,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
 
 
 
-  globals()["h_truth_%s_eff_track_z0"%typ] = Hist( hname              = "h_truth_%s_eff_track_z0"%typ,
+  globals()["h_truth_%s_eff_track_z0"%typ] = Hist1D( hname              = "h_truth_%s_eff_track_z0"%typ,
                                                          leg_entry      = typ,
                                                          xtitle         = "z_{0}(#mu) [mm]",
                                                          ytitle         = "Entries",
@@ -149,12 +149,34 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_truth_%s_eff_track_z0"%typ])
 
 
+  # ----------------
+  # efficiencies 2-D
+  # ----------------
+
+  globals()["h_truth_%s_eff_track_qinv2pt_eta"%typ] = Hist2D( hname     = "h_truth_%s_eff_track_qinv2pt_eta"%typ,
+                                                         leg_entry      = typ,
+                                                         xtitle         = "q/2p_{T}(#mu) [GeV^{-1}]",
+                                                         ytitle         = "#eta(#mu)",
+                                                         nbinsx         = 50,
+                                                         nbinsy         = 50,
+                                                         xmin           = -0.6,
+                                                         xmax           = 0.6,
+                                                         ymin           = -2.5,
+                                                         ymax           = 2.5,
+                                                         varx_fill      = "truth_track_qinv2pt",
+                                                         vary_fill      = "truth_track_eta",
+                                                         num_selection  = "truth_ismatched_%s==1"%(typ),
+                                                         style_dict = globals()["%s_style"%typ],
+                                                         )
+  hlist.append(globals()["h_truth_%s_eff_track_qinv2pt_eta"%typ])
+
+
 
   # ---------------------
   # inclusive resolutions
   # ---------------------
 
-  globals()["h_%s_track_delta_pt"%typ] = Hist( hname      = "h_%s_track_delta_pt"%typ,
+  globals()["h_%s_track_delta_pt"%typ] = Hist1D( hname      = "h_%s_track_delta_pt"%typ,
                                                          leg_entry  = typ,
                                                          xtitle     = "p_{T}(true) - p_{T}(reco)[GeV]",
                                                          ytitle     = "Entries",
@@ -167,7 +189,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_delta_pt"%typ])
  
   
-  globals()["h_%s_track_delta_qinv2pt"%typ] = Hist( hname      = "h_%s_track_delta_qinv2pt"%typ,
+  globals()["h_%s_track_delta_qinv2pt"%typ] = Hist1D( hname      = "h_%s_track_delta_qinv2pt"%typ,
                                                          leg_entry  = typ,
                                                          xtitle     = "q/2p_{T}(true) - q/2p_{T}(reco) [GeV^{-1}]",
                                                          ytitle     = "Entries",
@@ -180,7 +202,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_delta_qinv2pt"%typ])
 
   
-  globals()["h_%s_track_delta_eta"%typ] = Hist( hname      = "h_%s_track_delta_eta"%typ,
+  globals()["h_%s_track_delta_eta"%typ] = Hist1D( hname      = "h_%s_track_delta_eta"%typ,
                                                          leg_entry  = typ,
                                                          xtitle     = "#eta(true) - #eta(reco)",
                                                          ytitle     = "Entries",
@@ -193,7 +215,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_delta_eta"%typ])
 
 
-  globals()["h_%s_track_delta_phi"%typ] = Hist( hname      = "h_%s_track_delta_phi"%typ,
+  globals()["h_%s_track_delta_phi"%typ] = Hist1D( hname      = "h_%s_track_delta_phi"%typ,
                                                          leg_entry  = typ,
                                                          xtitle     = "#phi(true) - #phi(reco)",
                                                          ytitle     = "Entries",
@@ -206,7 +228,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_delta_phi"%typ])
 
 
-  globals()["h_%s_track_delta_d0"%typ] = Hist( hname      = "h_%s_track_delta_d0"%typ,
+  globals()["h_%s_track_delta_d0"%typ] = Hist1D( hname      = "h_%s_track_delta_d0"%typ,
                                                          leg_entry  = typ,
                                                          xtitle     = "d_{0}(true) - d_{0}(reco)[mm]",
                                                          ytitle     = "Entries",
@@ -219,7 +241,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_delta_d0"%typ])
 
   
-  globals()["h_%s_track_delta_z0"%typ] = Hist( hname      = "h_%s_track_delta_z0"%typ,
+  globals()["h_%s_track_delta_z0"%typ] = Hist1D( hname      = "h_%s_track_delta_z0"%typ,
                                                          leg_entry  = typ,
                                                          xtitle     = "z_{0}(true) - z_{0}(reco)[mm]",
                                                          ytitle     = "Entries",
@@ -232,7 +254,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_delta_z0"%typ])
 
 
-  globals()["h_%s_track_delta_theta"%typ] = Hist( hname      = "h_%s_track_delta_theta"%typ,
+  globals()["h_%s_track_delta_theta"%typ] = Hist1D( hname      = "h_%s_track_delta_theta"%typ,
                                                          leg_entry  = typ,
                                                          xtitle     = "#theta(true) - #theta(reco)",
                                                          ytitle     = "Entries",
@@ -245,7 +267,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_delta_theta"%typ])
 
 
-  globals()["h_%s_track_delta_qop"%typ] = Hist( hname      = "h_%s_track_delta_qop"%typ,
+  globals()["h_%s_track_delta_qop"%typ] = Hist1D( hname      = "h_%s_track_delta_qop"%typ,
                                                          leg_entry  = typ,
                                                          xtitle     = "q/p(true) - q/p(reco)[GeV^{-1}]",
                                                          ytitle     = "Entries",
@@ -262,7 +284,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   # profile resolutions
   # -------------------
   
-  globals()["h_%s_track_reso_qinv2pt_vs_truth_track_qinv2pt"%typ] = Hist( hname        = "h_%s_track_reso_qinv2pt_vs_truth_track_qinv2pt"%typ,
+  globals()["h_%s_track_reso_qinv2pt_vs_truth_track_qinv2pt"%typ] = Hist1D( hname        = "h_%s_track_reso_qinv2pt_vs_truth_track_qinv2pt"%typ,
                                                                  is_profile   = True,
                                                                  use_roostat = use_roostat,
                                                                  use_fit      = use_fit,
@@ -284,7 +306,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_reso_qinv2pt_vs_truth_track_qinv2pt"%typ])
   
   
-  globals()["h_%s_track_reso_eta_vs_truth_track_qinv2pt"%typ] = Hist( hname        = "h_%s_track_reso_eta_vs_truth_track_qinv2pt"%typ,
+  globals()["h_%s_track_reso_eta_vs_truth_track_qinv2pt"%typ] = Hist1D( hname        = "h_%s_track_reso_eta_vs_truth_track_qinv2pt"%typ,
                                                                  is_profile   = True,
                                                                  use_roostat = use_roostat,
                                                                  use_fit      = use_fit,
@@ -306,7 +328,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_reso_eta_vs_truth_track_qinv2pt"%typ])
 
 
-  globals()["h_%s_track_reso_phi_vs_truth_track_qinv2pt"%typ] = Hist( hname        = "h_%s_track_reso_phi_vs_truth_track_qinv2pt"%typ,
+  globals()["h_%s_track_reso_phi_vs_truth_track_qinv2pt"%typ] = Hist1D( hname        = "h_%s_track_reso_phi_vs_truth_track_qinv2pt"%typ,
                                                                  is_profile   = True,
                                                                  use_roostat = use_roostat,
                                                                  use_fit      = use_fit,
@@ -328,7 +350,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_reso_phi_vs_truth_track_qinv2pt"%typ])
 
   
-  globals()["h_%s_track_reso_d0_vs_truth_track_qinv2pt"%typ] = Hist( hname        = "h_%s_track_reso_d0_vs_truth_track_qinv2pt"%typ,
+  globals()["h_%s_track_reso_d0_vs_truth_track_qinv2pt"%typ] = Hist1D( hname        = "h_%s_track_reso_d0_vs_truth_track_qinv2pt"%typ,
                                                                  is_profile   = True,
                                                                  use_roostat = use_roostat,
                                                                  use_fit      = use_fit,
@@ -351,7 +373,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_reso_d0_vs_truth_track_qinv2pt"%typ])
  
 
-  globals()["h_%s_track_reso_z0_vs_truth_track_qinv2pt"%typ] = Hist( hname    = "h_%s_track_reso_z0_vs_truth_track_qinv2pt"%typ,
+  globals()["h_%s_track_reso_z0_vs_truth_track_qinv2pt"%typ] = Hist1D( hname    = "h_%s_track_reso_z0_vs_truth_track_qinv2pt"%typ,
                                                                  is_profile   = True,
                                                                  use_roostat = use_roostat,
                                                                  use_fit      = use_fit,
@@ -376,7 +398,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
 
 
 
-  globals()["h_%s_track_reso_qinv2pt_vs_truth_track_eta"%typ] = Hist( hname        = "h_%s_track_reso_qinv2pt_vs_truth_track_eta"%typ,
+  globals()["h_%s_track_reso_qinv2pt_vs_truth_track_eta"%typ] = Hist1D( hname        = "h_%s_track_reso_qinv2pt_vs_truth_track_eta"%typ,
                                                                  is_profile   = True,
                                                                  use_roostat = use_roostat,
                                                                  use_fit      = use_fit,
@@ -398,7 +420,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_reso_qinv2pt_vs_truth_track_eta"%typ])
   
   
-  globals()["h_%s_track_reso_eta_vs_truth_track_eta"%typ] = Hist( hname        = "h_%s_track_reso_eta_vs_truth_track_eta"%typ,
+  globals()["h_%s_track_reso_eta_vs_truth_track_eta"%typ] = Hist1D( hname        = "h_%s_track_reso_eta_vs_truth_track_eta"%typ,
                                                                  is_profile   = True,
                                                                  use_roostat = use_roostat,
                                                                  use_fit      = use_fit,
@@ -420,7 +442,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_reso_eta_vs_truth_track_eta"%typ])
 
 
-  globals()["h_%s_track_reso_phi_vs_truth_track_eta"%typ] = Hist( hname        = "h_%s_track_reso_phi_vs_truth_track_eta"%typ,
+  globals()["h_%s_track_reso_phi_vs_truth_track_eta"%typ] = Hist1D( hname        = "h_%s_track_reso_phi_vs_truth_track_eta"%typ,
                                                                  is_profile   = True,
                                                                  use_roostat = use_roostat,
                                                                  use_fit      = use_fit,
@@ -442,7 +464,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_reso_phi_vs_truth_track_eta"%typ])
 
   
-  globals()["h_%s_track_reso_d0_vs_truth_track_eta"%typ] = Hist( hname        = "h_%s_track_reso_d0_vs_truth_track_eta"%typ,
+  globals()["h_%s_track_reso_d0_vs_truth_track_eta"%typ] = Hist1D( hname        = "h_%s_track_reso_d0_vs_truth_track_eta"%typ,
                                                                  is_profile   = True,
                                                                  use_roostat = use_roostat,
                                                                  use_fit      = use_fit,
@@ -464,7 +486,7 @@ for typ in ["fastsim", "fullsim", "offline"]:
   hlist.append(globals()["h_%s_track_reso_d0_vs_truth_track_eta"%typ])
  
 
-  globals()["h_%s_track_reso_z0_vs_truth_track_eta"%typ] = Hist( hname    = "h_%s_track_reso_z0_vs_truth_track_eta"%typ,
+  globals()["h_%s_track_reso_z0_vs_truth_track_eta"%typ] = Hist1D( hname    = "h_%s_track_reso_z0_vs_truth_track_eta"%typ,
                                                                  is_profile   = True,
                                                                  use_roostat = use_roostat,
                                                                  use_fit      = use_fit,

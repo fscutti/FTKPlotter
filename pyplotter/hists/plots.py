@@ -12,7 +12,7 @@ import math
 #------------------------------------------------------------
 class Plot1D(object):
     '''
-    class to hold plot specs
+    class to hold 1D plot specs
     '''
     #________________________________________________________
     def __init__(self,
@@ -101,28 +101,6 @@ class Plot1D(object):
       
       if self.ratio_num and not self.ratio_den: self.set_den()
       
-      """
-      nLegend = len(self.ratio_den) + 1
-      if self.ratio_num: nLegend += 1
-     
-      x_legend    = 0.5
-      x_leg_shift = -0.055
-      y_leg_shift = 0.0
-      legYCompr   = 8.0
-      if not self.plot_stat: legYCompr = 2.0
-      legYMax     = 0.85
-      legYMin     = legYMax - (legYMax - (0.55 + y_leg_shift)) / legYCompr * nLegend
-      legXMin     = x_legend + x_leg_shift
-      legXMax     = legXMin + 0.4
-      
-      ## create legend (could use metaroot functionality?)
-      if not self.ratio_num:
-        legXMin -= 0.005
-        legXMax -= 0.058
-      leg = ROOT.TLegend(legXMin,legYMin,legXMax,legYMax)
-      """
-      
-      ##leg = ROOT.TLegend(0.53,0.73,0.9,0.86)
       leg = ROOT.TLegend(0.5,0.9,0.9,1.0)
       leg.SetBorderSize(0)
       leg.SetFillColor(0)
@@ -264,8 +242,8 @@ class Plot1D(object):
         pad2.cd()
         den_title = self.get_hist(self.ratio_den[0]).leg_entry
         
-        framey_max = 1.1*ymax2
-        framey_min = 0.0
+        framey_max = 1.6
+        framey_min = 0.4
         if len(self.ratio_den)>1:den_title = "X"
         
         if self.plot_ineff_ratio:
@@ -290,7 +268,7 @@ class Plot1D(object):
         xaxis2.SetTitleOffset( 3.2* xaxis2.GetTitleOffset() / scale  )
         xaxis2.SetLabelOffset( 2.5* xaxis2.GetLabelOffset() / scale )
         yaxis2.SetNdivisions(510)
-        xaxis2.SetNdivisions(510)
+        xaxis2.SetNdivisions(508)
         
         for hr in h_ratio_list: 
           if self.plot_ineff_ratio:
@@ -316,10 +294,134 @@ class Plot1D(object):
                bin_dict["slice_fit"].Draw("SAME")
                c_ibin.SaveAs("./slices/"+c_ibin.GetName()+".eps")
                c_ibin.Close()
-               #ROOT.gSystem.ProcessEvents()
 
       return 
 
+#------------------------------------------------------------
+class Plot2D(object):
+    '''
+    class to hold 2D plot specs
+    '''
+    #________________________________________________________
+    def __init__(self,
+            pname            = None,
+            xtitle           = None,
+            ytitle           = None,
+            xmin             = None,
+            xmax             = None,
+            ymin             = None,
+            ymax             = None,
+            hist_num         = None,
+            hist_den         = None,
+            instance         = None,
+            leg_head         = None,
+            plot_stat        = False,
+            draw_line        = False,
+            outfile          = None,
+            plot_ineff_ratio = False,
+            **kw):
+
+       self.pname            = pname
+       self.xtitle           = xtitle
+       self.ytitle           = ytitle
+       self.xmin             = xmin
+       self.xmax             = xmax
+       self.ymin             = ymin
+       self.ymax             = ymax
+       self.hist_num         = hist_num
+       self.hist_den         = hist_den
+       self.instance         = instance
+       self.leg_head         = leg_head
+       self.plot_stat        = plot_stat
+       self.draw_line        = draw_line
+       self.outfile          = outfile
+       self.plot_ineff_ratio = plot_ineff_ratio
+
+       ## set additional key-word args
+       # ----------------------------------------------------
+       for k,w in kw.iteritems():
+           setattr(self, k, w)
+   
+    #________________________________________________________
+    def get_name(self):
+       return self.__class__.__name__
+
+    #________________________________________________________
+    def get_hist(self,hname):
+       """
+       check that histograms on the store have been filled
+       """
+       assert hname in self.hstore.keys(), "ERROR: required hist %s not in store"%hname
+       h = self.hstore[hname]
+       if not h.instance: 
+         h.create_hist(self.chain)
+       return h
+    
+    #________________________________________________________
+    def get_plot(self):
+      
+      leg = ROOT.TLegend(0.5,0.9,0.9,1.0)
+      leg.SetBorderSize(0)
+      leg.SetFillColor(0)
+      leg.SetFillStyle(0)
+      leg.SetHeader(self.leg_head)
+
+      c = ROOT.TCanvas(self.pname,self.pname,800,700)
+      
+      pad = ROOT.TPad("pad","pad",0.,0.,1.,1.)
+      pad.SetLeftMargin(0.15)
+      pad.SetTicky()
+      pad.SetTickx()
+      pad.SetBottomMargin(0.15)
+      
+      pad.Draw()
+      pad.cd()
+      
+      hist_num = self.get_hist(self.hist_num).instance.Clone()
+      hist_den = None
+      hist_ratio = None
+
+      if self.hist_den:
+        hist_den = self.get_hist(self.hist_den).instance.Clone()
+        
+        hist_ratio = hist_num.Clone()
+        hist_ratio.SetNameTitle('%s_div_%s'%(hist_num.GetName(),hist_den.GetName()),'%s_div_%s'%(hist_num.GetName(),hist_den.GetName())) 
+        hist_ratio.Divide(hist_den)
+        
+        if self.plot_ineff_ratio:
+          for ibx in xrange(hist_num.GetNbinsX()):
+            for iby in xrange(hist_den.GetNbinsY()):
+              hist_ratio.SetBinContent(ibx,iby, 1.-hist_ratio.GetBinContent(ibx,iby))
+        
+        hist_ratio.SetStats(False)
+        hist_ratio.Draw("SAME,colz")
+
+      else:
+        hist_num.SetStats(False)
+        hist_num.Draw("SAME,colz")
+
+      
+      stat_info = self.get_hist(self.hist_num).leg_entry
+      if self.plot_stat: 
+        """
+        mean = hist.instance.GetMean()
+        sigma = hist.instance.GetStdDev()
+        stat_info = ",".join([
+          hist.leg_entry,
+          "avg: %s"%float('%.2g' % mean),
+          "RMS: %s"%float('%.2g' % sigma) 
+          ])
+        """
+        pass
+      
+      #leg.AddEntry(hist.instance,stat_info, "PL")
+      #leg.Draw()
+      pad.RedrawAxis()
+
+      c.SaveAs(c.GetName()+".root")
+      c.Close()
+
+      return 
 
 ## EOF
 

@@ -15,10 +15,10 @@ spec = [
 """
 import ROOT
 from math import sqrt
-from numba import jit
+#from numba import jit
 
 #________________________________________________________
-@jit
+#@jit
 def _get_moments(data,moment):
 
     N = len(data)
@@ -52,8 +52,9 @@ def _get_moments(data,moment):
 
 
 # - - - - - - - - - - - class defs  - - - - - - - - - - - - #
+
 #------------------------------------------------------------
-class Hist(object):
+class Hist1D(object):
     '''
     class to hold histogram info for plotting
     one-dimensional histograms
@@ -255,13 +256,14 @@ class Hist(object):
                        #ibin_mean = self.get_moments(ddict[ibin]["entries"],"mean")
                        #ibin_rms = self.get_moments(ddict[ibin]["entries"],"rms")
                        #ibin_sigrms = self.get_moments(ddict[ibin]["entries"],"sig_rms")
-                       ibin_sigma = self.get_moments(ddict[ibin]["entries"],"sigma")
-                       ibin_sigsigma = self.get_moments(ddict[ibin]["entries"],"sigsigma")
+                       
+                       #ibin_sigma = self.get_moments(ddict[ibin]["entries"],"sigma")
+                       #ibin_sigsigma = self.get_moments(ddict[ibin]["entries"],"sigsigma")
                        
                        # use root moments
                        # ------------------------
-                       #ibin_sigma = ddict[ibin]["h_slice"].GetStdDev()
-                       #ibin_sigsigma = ddict[ibin]["h_slice"].GetStdDevError()
+                       ibin_sigma = ddict[ibin]["h_slice"].GetStdDev()
+                       ibin_sigsigma = ddict[ibin]["h_slice"].GetStdDevError()
 
 
                        h.SetBinContent(ibin,ibin_sigma)
@@ -311,6 +313,111 @@ class Hist(object):
           #self.instance.Print("all")
        return self.instance
 
+
+
+
+#------------------------------------------------------------
+class Hist2D(object):
+    '''
+    class to hold histogram info for plotting
+    two-dimensional histograms
+    '''
+    #________________________________________________________
+    def __init__(self,
+            hname          = None,
+            leg_entry      = None,
+            xtitle         = None,
+            ytitle         = None,
+            nbinsx         = None,
+            nbinsy         = None,
+            xmin           = None,
+            xmax           = None,
+            ymin           = None,
+            ymax           = None,
+            var_fill       = None,
+            instance       = None,
+            selection      = "",
+            num_selection  = "",
+            style_dict     = None,
+            chain          = None,
+            **kw):
+
+       self.hname          = hname
+       self.leg_entry      = leg_entry
+       self.xtitle         = xtitle
+       self.ytitle         = ytitle
+       self.nbinsx         = nbinsx
+       self.nbinsy         = nbinsy
+       self.xmin           = xmin
+       self.xmax           = xmax
+       self.ymin           = ymin
+       self.ymax           = ymax
+       self.var_fill       = var_fill
+       self.instance       = instance
+       self.selection      = selection
+       self.num_selection  = num_selection
+       self.style_dict     = style_dict
+       self.chain          = chain
+
+       ## set additional key-word args
+       # ----------------------------------------------------
+       for k,w in kw.iteritems():
+           setattr(self, k, w)
+
+    #________________________________________________________
+    def get_name(self,chain=None):
+       return self.__class__.__name__
+
+    #________________________________________________________
+    def set_style(self,h=None):
+       """
+       set style of histogram
+       """
+
+       h.GetXaxis().SetTitle(self.xtitle)
+       h.GetXaxis().SetTitleOffset( 1.3 *  h.GetXaxis().GetTitleOffset())
+       h.GetXaxis().SetLabelOffset( 0.7 *  h.GetXaxis().GetLabelOffset())
+       h.GetXaxis().SetTitleSize(   1.3 *  h.GetXaxis().GetTitleSize())
+       h.GetXaxis().SetLabelSize(   1.1 *  h.GetXaxis().GetLabelSize())
+       
+       h.GetYaxis().SetTitle(self.ytitle)
+       h.GetYaxis().SetTitleOffset( 1.3 *  h.GetYaxis().GetTitleOffset())
+       h.GetYaxis().SetLabelOffset( 0.7 *  h.GetYaxis().GetLabelOffset())
+       h.GetYaxis().SetTitleSize(   1.3 *  h.GetYaxis().GetTitleSize())
+       h.GetYaxis().SetLabelSize(   1.1 *  h.GetYaxis().GetLabelSize())
+
+       return h
+
+    #________________________________________________________
+    def create_hist(self,chain=None):
+       if chain: self.chain=chain
+       assert self.chain,    "ERROR: chain not initialised for %s"%self.hname
+
+       h = ROOT.TH2D(self.hname,self.hname, self.nbinsx, self.xmin, self.xmax,self.nbinsy, self.ymin, self.ymax)
+       h.Sumw2()
+       assert h, "ERROR: histogram % not initialised!!!" % self.hname
+       
+       if self.num_selection:
+         if self.selection: 
+           self.num_selection = " && ".join([self.num_selection,self.selection])
+         
+         h_num = ROOT.TH2D(self.hname+"_num",self.hname+"_num",self.nbinsx, self.xmin, self.xmax,self.nbinsy, self.ymin, self.ymax)
+         h_num.Sumw2()
+         self.chain.Draw(":".join([self.vary_fill,self.varx_fill])+">>"+self.hname+"_num",self.num_selection)
+         
+         h_den = ROOT.TH2D(self.hname+"_den",self.hname+"_den",self.nbinsx, self.xmin, self.xmax,self.nbinsy, self.ymin, self.ymax)
+         h_den.Sumw2()
+         self.chain.Draw(":".join([self.vary_fill,self.varx_fill])+">>"+self.hname+"_den",self.selection)
+         #self.chain.Draw(self.var_fill+">>"+self.hname+"_den",self.selection)
+        
+         h.Divide(h_num,h_den,1.,1.,"b")
+       
+       else: 
+         
+         self.chain.Draw(":".join([self.vary_fill,self.varx_fill])+">>"+self.hname,self.selection)
+       
+       self.instance = self.set_style(h)
+       return self.instance
 
 ## EOF
 

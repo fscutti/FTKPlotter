@@ -17,6 +17,10 @@ p_track_pt  = Plot1D( pname      = "p_track_pt",
                       xmax       = 100.,
                      )
 
+# ----------------
+# efficiencies 1-D
+# ----------------
+
 p_eff_pt  = Plot1D( pname               = "p_eff_pt",
                       leg_head          = "#varepsilon(p_{T})",
                       ratio_num         = "h_truth_fullsim_eff_track_pt", # give full eff for inefficiency ratio
@@ -90,6 +94,22 @@ p_eff_z0  = Plot1D( pname               = "p_eff_z0",
                      )
 
 
+# ------------------
+# inefficiencies 2-D
+# ------------------
+
+p_ineff_qinv2pt_eta  = Plot2D( pname    = "p_ineff_qinv2pt_eta",
+                      leg_head          = "#delta(q/2p_{T},#eta)",
+                      hist_num          = "h_truth_fullsim_eff_track_qinv2pt_eta", 
+                      hist_den          = "h_truth_fastsim_eff_track_qinv2pt_eta", 
+                      xtitle            = "q/2p_{T}(#mu) [GeV^{-1}]",
+                      ytitle            = "#eta",
+                      xmin              = -0.6,
+                      xmax              = 0.6,
+                      ymin              = -2.5,
+                      ymax              = 2.5,
+                      plot_ineff_ratio  = True,
+                     )
 
 # ---------------------
 # inclusive resolutions
@@ -328,12 +348,23 @@ p_track_reso_z0_vs_truth_track_eta  = Plot1D( pname  = "p_track_reso_z0_vs_truth
 
 plist = []
 #plist.append(p_track_pt)
-plist.append(p_eff_pt)
-plist.append(p_eff_qinv2pt)
-plist.append(p_eff_eta)
-plist.append(p_eff_phi)
-plist.append(p_eff_d0)
-plist.append(p_eff_z0)
+
+# efficiencies
+# -----------------------
+#plist.append(p_eff_pt)
+#plist.append(p_eff_qinv2pt)
+#plist.append(p_eff_eta)
+#plist.append(p_eff_phi)
+#plist.append(p_eff_d0)
+#plist.append(p_eff_z0)
+
+
+# inefficiencies 2-D
+# -----------------------
+plist.append(p_ineff_qinv2pt_eta)
+
+
+
 
 """
 # inclusive distributions
@@ -346,24 +377,24 @@ plist.append(p_track_delta_d0)
 plist.append(p_track_delta_z0)
 #plist.append(p_track_delta_theta)
 #plist.append(p_track_delta_qop)
-
+"""
 #plist.append(p_track_reso_pt_vs_truth_track_eta)
 #plist.append(p_track_reso_pt_vs_truth_track_phi)
 
 # profile resolutions
 # -------------------
-plist.append(p_track_reso_qinv2pt_vs_truth_track_qinv2pt)  
-plist.append(p_track_reso_phi_vs_truth_track_qinv2pt)      
-plist.append(p_track_reso_eta_vs_truth_track_qinv2pt)      
-plist.append(p_track_reso_d0_vs_truth_track_qinv2pt)       
-plist.append(p_track_reso_z0_vs_truth_track_qinv2pt)
+#plist.append(p_track_reso_qinv2pt_vs_truth_track_qinv2pt)  
+#plist.append(p_track_reso_phi_vs_truth_track_qinv2pt)      
+#plist.append(p_track_reso_eta_vs_truth_track_qinv2pt)      
+#plist.append(p_track_reso_d0_vs_truth_track_qinv2pt)       
+#plist.append(p_track_reso_z0_vs_truth_track_qinv2pt)
 
-plist.append(p_track_reso_qinv2pt_vs_truth_track_eta)      
-plist.append(p_track_reso_phi_vs_truth_track_eta)          
-plist.append(p_track_reso_eta_vs_truth_track_eta)          
-plist.append(p_track_reso_d0_vs_truth_track_eta)           
-plist.append(p_track_reso_z0_vs_truth_track_eta)           
-"""
+#plist.append(p_track_reso_qinv2pt_vs_truth_track_eta)      
+#plist.append(p_track_reso_phi_vs_truth_track_eta)          
+#plist.append(p_track_reso_eta_vs_truth_track_eta)          
+#plist.append(p_track_reso_d0_vs_truth_track_eta)           
+#plist.append(p_track_reso_z0_vs_truth_track_eta)           
+
 ## EOF
 
 
